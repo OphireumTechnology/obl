@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from './components/common/Header';
+import { Sidebar } from './components/common/Sidebar';
 import { DemoEnvironmentBanner } from './components/common/DemoEnvironmentBanner';
 import { GlobalSearchModal } from './components/common/GlobalSearchModal';
 import { NotificationDrawer } from './components/common/NotificationDrawer';
@@ -15,11 +16,18 @@ import { appStore } from './services/store';
 import { UserRole } from './types';
 
 export default function App() {
-  const [currentRoute, setCurrentRoute] = useState<string>('/');
+  const [currentRoute, setCurrentRoute] = useState<string>('/chat');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isDemoLoginOpen, setIsDemoLoginOpen] = useState(false);
   const [activeRole, setActiveRole] = useState<UserRole>(appStore.getState().activeRole);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('axa_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
     const unsub = appStore.subscribe(() => {
@@ -27,6 +35,16 @@ export default function App() {
     });
     return () => unsub();
   }, []);
+
+  const handleToggleSidebar = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('axa_sidebar_collapsed', String(next));
+      } catch {}
+      return next;
+    });
+  };
 
   const handleNavigate = (route: string) => {
     setCurrentRoute(route);
@@ -41,7 +59,7 @@ export default function App() {
 
   const roleLabels: Record<UserRole, string> = {
     CUSTOMER: 'Customer (Maria Santos)',
-    ADVISOR: 'Advisor (Carlos Mendoza - AXA-LIC-77402)',
+    ADVISOR: 'Advisor (Bishop Orly B. Languisan - AXA-LIC-77402)',
     ADMIN: 'Administrator & Product Brain (Elena Ramos)',
     AI_TRAINER: 'AI Quality Engineer (Dr. Arthur Chen)',
     SALES_MANAGER: 'Sales Agency Manager',
@@ -50,84 +68,101 @@ export default function App() {
     SUPER_ADMIN: 'Super Administrator',
   };
 
+  // Extract base route without query parameters
+  const baseRoute = currentRoute.split('?')[0];
+
   return (
     <div className="min-h-screen bg-slate-100/70 text-slate-900 flex flex-col font-sans antialiased selection:bg-blue-100 selection:text-blue-900">
       {/* Persistent Demo Warning Banner */}
       <DemoEnvironmentBanner roleText={roleLabels[activeRole]} />
 
-      {/* Global Application Header */}
+      {/* Global Minimal Application Header */}
       <Header
         currentRoute={currentRoute}
         onNavigate={handleNavigate}
         onOpenSearch={() => setIsSearchOpen(true)}
         onOpenNotifications={() => setIsNotificationsOpen(true)}
         onOpenDemoLogin={() => setIsDemoLoginOpen(true)}
+        isSidebarCollapsed={isSidebarCollapsed}
+        onToggleSidebar={handleToggleSidebar}
       />
 
-      {/* Main Routed Content */}
-      <main className="flex-1">
-        {currentRoute === '/' && (
-          <PublicLanding
-            onNavigate={handleNavigate}
-            onSelectRole={handleSelectRole}
-          />
-        )}
+      {/* Main Workspace Layout with Persistent Collapsible Left Sidebar */}
+      <div className="flex-1 flex overflow-hidden">
+        <Sidebar
+          currentRoute={currentRoute}
+          onNavigate={handleNavigate}
+          activeRole={activeRole}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={handleToggleSidebar}
+        />
 
-        {currentRoute === '/chat' && (
-          <CustomerChat
-            onNavigateToAdvisor={() => handleNavigate('/advisor')}
-            onNavigateToProducts={() => handleNavigate('/products')}
-          />
-        )}
+        <main className="flex-1 overflow-x-hidden overflow-y-auto min-h-[calc(100vh-6.5rem)] flex flex-col">
+          <div className="flex-1">
+            {baseRoute === '/' && (
+              <PublicLanding
+                onNavigate={handleNavigate}
+                onSelectRole={handleSelectRole}
+              />
+            )}
 
-        {currentRoute === '/customer' && (
-          <CustomerWorkspace
-            onNavigateToChat={() => handleNavigate('/chat')}
-            onNavigateToProducts={() => handleNavigate('/products')}
-          />
-        )}
+            {baseRoute === '/chat' && (
+              <CustomerChat
+                onNavigateToAdvisor={() => handleNavigate('/advisor')}
+                onNavigateToProducts={() => handleNavigate('/products')}
+              />
+            )}
 
-        {currentRoute === '/advisor' && (
-          <AdvisorDashboard
-            onNavigateToChat={() => handleNavigate('/chat')}
-          />
-        )}
+            {baseRoute === '/customer' && (
+              <CustomerWorkspace
+                onNavigateToChat={() => handleNavigate('/chat')}
+                onNavigateToProducts={() => handleNavigate('/products')}
+              />
+            )}
 
-        {currentRoute === '/admin' && (
-          <AdminDashboard />
-        )}
+            {baseRoute === '/advisor' && (
+              <AdvisorDashboard
+                onNavigateToChat={() => handleNavigate('/chat')}
+              />
+            )}
 
-        {currentRoute === '/training' && (
-          <TrainingCenter />
-        )}
+            {baseRoute === '/admin' && (
+              <AdminDashboard />
+            )}
 
-        {currentRoute === '/products' && (
-          <ProductExplorer
-            onNavigateToChat={() => handleNavigate('/chat')}
-          />
-        )}
-      </main>
+            {baseRoute === '/training' && (
+              <TrainingCenter />
+            )}
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-6 text-xs text-slate-500 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-900">AXA AI Insurance Sales Operating System</span>
-            <span>•</span>
-            <span>Phase 1 Interactive Demo</span>
+            {baseRoute === '/products' && (
+              <ProductExplorer
+                onNavigateToChat={() => handleNavigate('/chat')}
+              />
+            )}
           </div>
-          <div className="flex items-center gap-4 text-[11px] text-slate-400">
-            <span>Insurance Commission Demo Sandbox</span>
-            <span>•</span>
-            <button
-              onClick={() => setIsDemoLoginOpen(true)}
-              className="text-[#00008F] hover:underline font-medium"
-            >
-              Change Active Role
-            </button>
-          </div>
-        </div>
-      </footer>
+
+          {/* Minimal Footer */}
+          <footer className="bg-white border-t border-slate-200 py-3 px-6 text-xs text-slate-500 mt-auto">
+            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-slate-900">AXA AI Insurance Sales Operating System</span>
+                <span>•</span>
+                <span>Production Sales Demo</span>
+              </div>
+              <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                <span>Licensed Advisor: Bishop Orly B. Languisan (+63 968 647 1868)</span>
+                <span>•</span>
+                <button
+                  onClick={() => setIsDemoLoginOpen(true)}
+                  className="text-[#00008F] hover:underline font-medium"
+                >
+                  Change Active Role
+                </button>
+              </div>
+            </div>
+          </footer>
+        </main>
+      </div>
 
       {/* Modals & Drawers */}
       <GlobalSearchModal

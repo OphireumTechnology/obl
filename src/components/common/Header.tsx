@@ -1,18 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Shield,
-  MessageSquare,
-  UserCheck,
-  LayoutDashboard,
-  GraduationCap,
-  Package,
   Search,
   Bell,
   RotateCcw,
   ChevronDown,
-  User,
-  Home,
   Check,
+  PanelLeftClose,
+  PanelLeftOpen,
+  User,
+  Shield,
 } from 'lucide-react';
 import { appStore } from '../../services/store';
 import { UserRole } from '../../types';
@@ -23,6 +19,8 @@ interface Props {
   onOpenSearch: () => void;
   onOpenNotifications: () => void;
   onOpenDemoLogin: () => void;
+  isSidebarCollapsed: boolean;
+  onToggleSidebar: () => void;
 }
 
 export const Header: React.FC<Props> = ({
@@ -31,6 +29,8 @@ export const Header: React.FC<Props> = ({
   onOpenSearch,
   onOpenNotifications,
   onOpenDemoLogin,
+  isSidebarCollapsed,
+  onToggleSidebar,
 }) => {
   const [activeRole, setActiveRole] = useState<UserRole>(appStore.getState().activeRole);
   const [unreadCount, setUnreadCount] = useState<number>(0);
@@ -47,25 +47,15 @@ export const Header: React.FC<Props> = ({
     return () => unsub();
   }, []);
 
-  const navItems = [
-    { label: 'Home', route: '/', icon: <Home className="w-3.5 h-3.5" /> },
-    { label: 'Customer AI', route: '/chat', icon: <MessageSquare className="w-3.5 h-3.5" /> },
-    { label: 'Customer Portal', route: '/customer', icon: <User className="w-3.5 h-3.5" /> },
-    { label: 'Advisor Workspace', route: '/advisor', icon: <UserCheck className="w-3.5 h-3.5" /> },
-    { label: 'Admin & Brain', route: '/admin', icon: <LayoutDashboard className="w-3.5 h-3.5" /> },
-    { label: 'Training Lab', route: '/training', icon: <GraduationCap className="w-3.5 h-3.5" /> },
-    { label: 'Products', route: '/products', icon: <Package className="w-3.5 h-3.5" /> },
-  ];
-
-  const roleLabels: Record<UserRole, { title: string; color: string }> = {
-    CUSTOMER: { title: 'Customer (Maria)', color: 'bg-blue-600' },
-    ADVISOR: { title: 'Advisor (Carlos)', color: 'bg-indigo-600' },
-    ADMIN: { title: 'Admin (Elena)', color: 'bg-emerald-600' },
-    AI_TRAINER: { title: 'AI Trainer (Arthur)', color: 'bg-purple-600' },
-    SALES_MANAGER: { title: 'Sales Manager', color: 'bg-amber-600' },
-    PRODUCT_REVIEWER: { title: 'Product Reviewer', color: 'bg-teal-600' },
-    COMPLIANCE_REVIEWER: { title: 'Compliance Lead', color: 'bg-rose-600' },
-    SUPER_ADMIN: { title: 'Super Admin', color: 'bg-slate-700' },
+  const roleLabels: Record<UserRole, { title: string; color: string; desc: string }> = {
+    CUSTOMER: { title: 'Customer (Maria)', color: 'bg-blue-500', desc: 'Customer exploration & portal' },
+    ADVISOR: { title: 'Advisor (Bishop Orly)', color: 'bg-indigo-500', desc: 'Lead & client sales operations' },
+    ADMIN: { title: 'Admin (Elena)', color: 'bg-emerald-500', desc: 'Product Brain & governance' },
+    AI_TRAINER: { title: 'AI Trainer (Arthur)', color: 'bg-purple-500', desc: 'Agent evaluations & prompts' },
+    SALES_MANAGER: { title: 'Sales Manager', color: 'bg-amber-500', desc: 'Agency oversight & pipeline' },
+    PRODUCT_REVIEWER: { title: 'Product Reviewer', color: 'bg-teal-500', desc: 'Fact sheet verification' },
+    COMPLIANCE_REVIEWER: { title: 'Compliance Lead', color: 'bg-rose-500', desc: 'Regulatory & audit review' },
+    SUPER_ADMIN: { title: 'Super Admin', color: 'bg-slate-700', desc: 'System-wide configuration' },
   };
 
   const handleRoleSelect = (role: UserRole) => {
@@ -78,63 +68,54 @@ export const Header: React.FC<Props> = ({
   };
 
   return (
-    <header className="bg-[#00008F] text-white border-b border-blue-950 sticky top-0 z-40 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+    <header className="bg-[#00008F] text-white border-b border-blue-950 sticky top-0 z-40 shadow-xs">
+      <div className="px-4 sm:px-6">
         <div className="flex items-center justify-between h-14">
-          {/* Brand */}
+          {/* Left: Sidebar Toggle + Title/Breadcrumb */}
           <div className="flex items-center gap-3">
+            <button
+              onClick={onToggleSidebar}
+              className="p-1.5 rounded-lg text-blue-200 hover:text-white hover:bg-white/10 transition-colors"
+              title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+            >
+              {isSidebarCollapsed ? (
+                <PanelLeftOpen className="w-4 h-4" />
+              ) : (
+                <PanelLeftClose className="w-4 h-4" />
+              )}
+            </button>
+
             <button
               onClick={() => onNavigate('/')}
               className="flex items-center gap-2 group text-left focus:outline-none"
             >
-              <div className="w-8 h-8 rounded-sm bg-[#C91432] flex items-center justify-center font-black text-white text-sm tracking-tighter shadow-xs group-hover:bg-red-700 transition-colors">
+              <div className="w-7 h-7 rounded-sm bg-[#C91432] flex items-center justify-center font-black text-white text-xs tracking-tight shadow-xs">
                 AXA
               </div>
-              <div className="hidden sm:block">
+              <div>
                 <div className="text-xs font-bold tracking-tight text-white flex items-center gap-1.5">
-                  <span>AI SALES AGENT</span>
+                  <span>AI Insurance Sales Agent</span>
                   <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-blue-900/80 text-blue-200 border border-blue-700/50">
-                    DEMO
+                    Phase 1 Demo
                   </span>
-                </div>
-                <div className="text-[10px] text-blue-200/80 tracking-wide font-medium">
-                  Enterprise Advisory Operating System
                 </div>
               </div>
             </button>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-1">
-            {navItems.map((item) => {
-              const isActive = currentRoute === item.route;
-              return (
-                <button
-                  key={item.route}
-                  onClick={() => onNavigate(item.route)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${
-                    isActive
-                      ? 'bg-white/15 text-white shadow-xs font-semibold'
-                      : 'text-blue-100/80 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-
-          {/* Right utility actions */}
+          {/* Right: Minimal utility actions (Search, Notifications, Role, Reset) */}
           <div className="flex items-center gap-2">
-            {/* Search */}
+            {/* Global Search */}
             <button
               onClick={onOpenSearch}
-              className="p-1.5 rounded-lg text-blue-200 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1 text-xs"
-              title="Global Search"
+              className="px-2.5 py-1.5 rounded-lg text-blue-200 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1.5 text-xs bg-white/5 border border-white/10"
+              title="Global Search across Leads, Products, FAQs"
             >
-              <Search className="w-4 h-4" />
-              <span className="hidden md:inline text-[11px] text-blue-300">Search</span>
+              <Search className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline text-[11px] text-blue-200">Search...</span>
+              <kbd className="hidden sm:inline px-1 py-0.2 text-[9px] font-mono bg-white/10 rounded text-blue-300">
+                ⌘K
+              </kbd>
             </button>
 
             {/* Notifications */}
@@ -156,16 +137,17 @@ export const Header: React.FC<Props> = ({
                 className="flex items-center gap-1.5 pl-2.5 pr-2 py-1 rounded-lg bg-white/10 hover:bg-white/15 border border-white/20 text-xs font-medium transition-colors"
               >
                 <span className={`w-2 h-2 rounded-full ${roleLabels[activeRole]?.color || 'bg-blue-400'}`} />
-                <span className="max-w-[120px] truncate text-slate-100">
+                <span className="max-w-[140px] truncate text-slate-100">
                   {roleLabels[activeRole]?.title || activeRole}
                 </span>
                 <ChevronDown className="w-3.5 h-3.5 text-blue-200" />
               </button>
 
               {roleDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200 py-2 text-slate-800 z-50 animate-in fade-in zoom-in-95 duration-100">
-                  <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
-                    Switch Active Role
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-2 text-slate-800 z-50 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 flex items-center justify-between">
+                    <span>Active User Role</span>
+                    <span className="text-[#00008F]">Switch Context</span>
                   </div>
                   {(['CUSTOMER', 'ADVISOR', 'ADMIN', 'AI_TRAINER'] as UserRole[]).map((r) => (
                     <button
@@ -175,11 +157,16 @@ export const Header: React.FC<Props> = ({
                         activeRole === r ? 'font-bold text-[#00008F] bg-blue-50/50' : 'text-slate-700'
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${roleLabels[r]?.color}`} />
-                        <span>{roleLabels[r]?.title}</span>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${roleLabels[r]?.color}`} />
+                          <span>{roleLabels[r]?.title}</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 block pl-4">
+                          {roleLabels[r]?.desc}
+                        </span>
                       </div>
-                      {activeRole === r && <Check className="w-3.5 h-3.5 text-[#00008F]" />}
+                      {activeRole === r && <Check className="w-3.5 h-3.5 text-[#00008F] shrink-0" />}
                     </button>
                   ))}
                   <div className="border-t border-slate-100 mt-1 pt-1">
@@ -211,25 +198,6 @@ export const Header: React.FC<Props> = ({
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
           </div>
-        </div>
-
-        {/* Mobile Navigation bar */}
-        <div className="lg:hidden flex items-center overflow-x-auto py-1.5 border-t border-blue-900/60 no-scrollbar space-x-1">
-          {navItems.map((item) => {
-            const isActive = currentRoute === item.route;
-            return (
-              <button
-                key={item.route}
-                onClick={() => onNavigate(item.route)}
-                className={`px-2.5 py-1 rounded text-xs whitespace-nowrap flex items-center gap-1 ${
-                  isActive ? 'bg-white/20 text-white font-semibold' : 'text-blue-200/80 hover:text-white'
-                }`}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
         </div>
       </div>
     </header>
