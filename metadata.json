@@ -1,0 +1,6 @@
+{
+  "name": "AXA AI Insurance Sales Agent",
+  "description": "Enterprise AI-assisted insurance sales operating system featuring Customer Chat, Advisor Workspace, Admin Product Brain, Compliance Engine, and AI Training Center.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

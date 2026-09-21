@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AXA AI Insurance Sales Agent — Demo</title>
+    <meta name="description" content="Enterprise AI-assisted insurance sales operating system featuring Customer Chat, Advisor Workspace, Admin Product Brain, Compliance Engine, and AI Training Center." />
+    <meta property="og:title" content="AXA AI Insurance Sales Agent — Demo" />
+    <meta property="og:description" content="Enterprise AI-assisted insurance sales operating system featuring Customer Chat, Advisor Workspace, Admin Product Brain, Compliance Engine, and AI Training Center." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      // Intercept and prevent third-party browser extension errors (such as MetaMask extension iframe disconnects)
+      (function() {
+        var isExtensionError = function(msg) {
+          if (!msg) return false;
+          var s = String(msg).toLowerCase();
+          return s.indexOf('metamask') !== -1 ||
+                 s.indexOf('failed to connect to metamask') !== -1 ||
+                 s.indexOf('extension context invalidated') !== -1 ||
+                 s.indexOf('chrome-extension://') !== -1 ||
+                 s.indexOf('moz-extension://') !== -1;
+        };
+
+        window.addEventListener('unhandledrejection', function(event) {
+          var reason = event.reason;
+          var msg = (reason && (reason.message || reason.stack || reason)) || '';
+          if (isExtensionError(msg)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          }
+        }, true);
+
+        window.addEventListener('error', function(event) {
+          var msg = event.message || '';
+          var src = event.filename || '';
+          if (isExtensionError(msg) || isExtensionError(src)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return true;
+          }
+        }, true);
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-slate-50 text-slate-900 antialiased font-['Public_Sans',sans-serif]">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
